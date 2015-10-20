@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/EncodingMatcherPluginFeature_1.0.0.BETA.jar" id="EncodingMatcherPluginFeature" version="1.0.0.BETA">
+      <category name="EncodingMatcherPlugin-1.0.0.BETA"/>
+   </feature>
+   <category-def name="EncodingMatcherPlugin-1.0.0.BETA" label="Encoding Matcher Plugin - 1.0.0.BETA">
+      <description>
+         Encoding Matcher Plugin - 1.0.0.BETA
+      </description>
+   </category-def>
+</site>

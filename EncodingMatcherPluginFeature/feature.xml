@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="EncodingMatcherPluginFeature"
+      label="EncodingMatcherPluginFeature"
+      version="1.0.0.BETA"
+      provider-name="pweege">
+
+   <description url="http://www.example.com/description">
+      Na ja.
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <plugin
+         id="EncodingMatcherPlugIn"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.BETA"
+         unpack="false"/>
+
+</feature>
