@@ -17,10 +17,18 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.ibm.icu.text.CharsetMatch;
 import com.pweege.plugins.encoding.matcher.util.EncodingMatcherUtil;
+import com.pweege.plugins.encoding.matcher.util.PreferencesPathMatcher;
 
 public class EncodingMatcherPluginBuilder extends IncrementalProjectBuilder {
 
 	class IncrementalBuildDeltaVisitor implements IResourceDeltaVisitor {
+
+		private final PreferencesPathMatcher preferencesMatcher;
+
+		public IncrementalBuildDeltaVisitor() {
+			this.preferencesMatcher = new PreferencesPathMatcher();
+		}
+
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -30,16 +38,21 @@ public class EncodingMatcherPluginBuilder extends IncrementalProjectBuilder {
 		 */
 		public boolean visit(IResourceDelta delta) throws CoreException {
 			IResource resource = delta.getResource();
-			switch (delta.getKind()) {
-			case IResourceDelta.ADDED:
+
+			boolean canVisit = preferencesMatcher.matchesPreferences(resource);
+			if (canVisit) {
 				checkEncoding(resource);
-				break;
-			case IResourceDelta.REMOVED:
-				// handle removed resource
-				break;
-			case IResourceDelta.CHANGED:
-				checkEncoding(resource);
-				break;
+				switch (delta.getKind()) {
+				case IResourceDelta.ADDED:
+					checkEncoding(resource);
+					break;
+				case IResourceDelta.REMOVED:
+					// handle removed resource
+					break;
+				case IResourceDelta.CHANGED:
+					checkEncoding(resource);
+					break;
+				}
 			}
 			// return true to continue visiting children.
 			return true;
@@ -47,9 +60,18 @@ public class EncodingMatcherPluginBuilder extends IncrementalProjectBuilder {
 	}
 
 	class FullBuildResourceVisitor implements IResourceVisitor {
+
+		private final PreferencesPathMatcher preferencesMatcher;
+
+		public FullBuildResourceVisitor() {
+			preferencesMatcher = new PreferencesPathMatcher();
+		}
+
 		public boolean visit(IResource resource) {
-			checkEncoding(resource);
-			// return true to continue visiting children.
+			boolean canVisit = preferencesMatcher.matchesPreferences(resource);
+			if (canVisit) {
+				checkEncoding(resource);
+			}
 			return true;
 		}
 	}
@@ -60,7 +82,7 @@ public class EncodingMatcherPluginBuilder extends IncrementalProjectBuilder {
 
 	private void addMarker(IFile file, String message, int lineNumber, int severity) {
 		try {
-			IMarker marker = file.createMarker(MARKER_TYPE);
+			IMarker marker = file.createMarker(EncodingMatcherPluginBuilder.MARKER_TYPE);
 			marker.setAttribute(IMarker.MESSAGE, message);
 			marker.setAttribute(IMarker.SEVERITY, severity);
 			if (lineNumber == -1) {
@@ -68,6 +90,7 @@ public class EncodingMatcherPluginBuilder extends IncrementalProjectBuilder {
 			}
 			marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
 		} catch (CoreException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -101,38 +124,39 @@ public class EncodingMatcherPluginBuilder extends IncrementalProjectBuilder {
 			if (resource instanceof IFile) {
 				IFile file = (IFile) resource;
 				String currentCharset = this.getCurrentCharset(file);
-				
+
 				InputStream contents = file.getContents();
-				
+
 				boolean decodable = EncodingMatcherUtil.isDecodable(contents, currentCharset);
-				if(!decodable) {
+				if (!decodable) {
 					contents = file.getContents();
 					CharsetMatch[] detectCharsets = EncodingMatcherUtil.detectCharsets(contents);
-					
+
 					StringBuilder altMessage = new StringBuilder();
 					int currentConfidence = 0;
 					boolean first = true;
 					for (CharsetMatch charsetMatch : detectCharsets) {
-						if(!first) {
+						if (!first) {
 							altMessage.append("; ");
 						}
 
-						if(EncodingMatcherUtil.areCharsetsEqual(currentCharset, charsetMatch.getName())) {
+						if (EncodingMatcherUtil.areCharsetsEqual(currentCharset, charsetMatch.getName())) {
 							currentConfidence = charsetMatch.getConfidence();
 						} else {
-							altMessage.append(charsetMatch.getName()).append("(").append(charsetMatch.getConfidence()).append("%");
+							altMessage.append(charsetMatch.getName()).append("(").append(charsetMatch.getConfidence())
+									.append("%)");
 							first = false;
 						}
 					}
-					
+
 					StringBuilder msg = new StringBuilder();
-					msg.append("The File not Matches the configured Charset: ");
+					msg.append("File decodable with: ");
 					msg.append(currentCharset);
 					msg.append(" (");
 					msg.append(currentConfidence);
-					msg.append("%) - Other Alternatives are: ");
+					msg.append("%) - other possibilities are: ");
 					msg.append(altMessage);
-					
+
 					addMarker(file, msg.toString(), -1, IMarker.SEVERITY_WARNING);
 
 				} else {

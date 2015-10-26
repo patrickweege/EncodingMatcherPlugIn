@@ -1,7 +1,10 @@
 package com.pweege.plugins.encoding.matcher.ativator;
 
+import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -10,15 +13,19 @@ import org.osgi.framework.BundleContext;
 public class Activator extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "EncodingMatcherPlugIn"; //$NON-NLS-1$
+	public static final String PLUGIN_ID = "com.pweege.plugins.encoding.matcher.EncodingMatcherPlugIn"; //$NON-NLS-1$
 
 	// The shared instance
 	private static Activator plugin;
+	
+	private IPreferenceStore defaultStore;
 	
 	/**
 	 * The constructor
 	 */
 	public Activator() {
+		this.defaultStore = new ScopedPreferenceStore(InstanceScope.INSTANCE, PLUGIN_ID);
+		System.out.println(InstanceScope.INSTANCE.getLocation());
 	}
 
 	/*
@@ -57,5 +64,10 @@ public class Activator extends AbstractUIPlugin {
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
+	}
+	
+	@Override
+	public IPreferenceStore getPreferenceStore() {
+		return this.defaultStore;
 	}
 }

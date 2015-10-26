@@ -45,7 +45,7 @@
             locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
          <command
                commandId="EncodingMatcherPlugIn.addRemoveEncodingMatcherPlugInNature"
-               label="Disable Sample builder"
+               label="Disable Encoding Matcher builder"
                style="push">
             <visibleWhen
                   checkEnabled="false">
@@ -68,7 +68,7 @@
          </command>
          <command
                commandId="EncodingMatcherPlugIn.addRemoveEncodingMatcherPlugInNature"
-               label="Enable Sample builder"
+               label="Enable Encoding Matcher builder"
                style="push">
             <visibleWhen
                   checkEnabled="false">
@@ -93,16 +93,22 @@
          </command>
       </menuContribution>
    </extension>
+   
    <extension
-         id="xmlProblem"
-         name="XML Problem"
+         id="EncodingMatcherPlugIn.encodingProblem"
+         name="EncodingMatcherPlugIn - Encoding Problem"
          point="org.eclipse.core.resources.markers">
-      <super
-            type="org.eclipse.core.resources.problemmarker">
-      </super>
-      <persistent
-            value="true">
-      </persistent>
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="false"/>
    </extension>
-
+   
+   	<extension
+		point = "org.eclipse.ui.preferencePages">
+       	<page id="com.pweege.plugins.encoding.matcher.preferences.EncodingMatcherPlugInPreferencePage"
+	    class="com.pweege.plugins.encoding.matcher.preferences.EncodingMatcherPlugInPreferencePage"
+            name="Encoding Matcher Matcher">
+       </page>
+   </extension>
+   
+  
 </plugin>
