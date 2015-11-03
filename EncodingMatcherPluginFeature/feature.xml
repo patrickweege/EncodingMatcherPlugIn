@@ -2,7 +2,7 @@
 <feature
       id="EncodingMatcherPluginFeature"
       label="EncodingMatcherPluginFeature"
-      version="1.0.1.BETA"
+      version="1.0.2.BETA"
       provider-name="pweege">
 
    <description url="http://www.example.com/description">
@@ -21,7 +21,7 @@
          id="EncodingMatcherPlugIn"
          download-size="0"
          install-size="0"
-         version="1.0.1.BETA"
+         version="1.0.2.BETA"
          unpack="false"/>
 
 </feature>

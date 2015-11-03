@@ -17,6 +17,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.ibm.icu.text.CharsetMatch;
 import com.pweege.plugins.encoding.matcher.util.EncodingMatcherUtil;
+import com.pweege.plugins.encoding.matcher.util.ICharsetDetecdor;
+import com.pweege.plugins.encoding.matcher.util.JUniversalChardet_CharsetDetector;
 import com.pweege.plugins.encoding.matcher.util.PreferencesPathMatcher;
 
 public class EncodingMatcherPluginBuilder extends IncrementalProjectBuilder {
@@ -41,7 +43,6 @@ public class EncodingMatcherPluginBuilder extends IncrementalProjectBuilder {
 
 			boolean canVisit = preferencesMatcher.matchesPreferences(resource);
 			if (canVisit) {
-				checkEncoding(resource);
 				switch (delta.getKind()) {
 				case IResourceDelta.ADDED:
 					checkEncoding(resource);
@@ -127,38 +128,28 @@ public class EncodingMatcherPluginBuilder extends IncrementalProjectBuilder {
 
 				InputStream contents = file.getContents();
 
-				boolean decodable = EncodingMatcherUtil.isDecodable(contents, currentCharset);
-				if (!decodable) {
+				ICharsetDetecdor detector = new JUniversalChardet_CharsetDetector();
+				String detectedCharset = detector.detectCharset(contents);
+				
+				boolean isCurrentEqualsDetected = EncodingMatcherUtil.areCharsetsEqual(currentCharset, detectedCharset);
+				
+				if(!isCurrentEqualsDetected) {
+					
 					contents = file.getContents();
 					CharsetMatch[] detectCharsets = EncodingMatcherUtil.detectCharsets(contents);
 
-					StringBuilder altMessage = new StringBuilder();
-					int currentConfidence = 0;
-					boolean first = true;
-					for (CharsetMatch charsetMatch : detectCharsets) {
-						if (!first) {
-							altMessage.append("; ");
-						}
-
-						if (EncodingMatcherUtil.areCharsetsEqual(currentCharset, charsetMatch.getName())) {
-							currentConfidence = charsetMatch.getConfidence();
-						} else {
-							altMessage.append(charsetMatch.getName()).append("(").append(charsetMatch.getConfidence())
-									.append("%)");
-							first = false;
-						}
-					}
-
 					StringBuilder msg = new StringBuilder();
-					msg.append("File decodable with: ");
-					msg.append(currentCharset);
-					msg.append(" (");
-					msg.append(currentConfidence);
-					msg.append("%) - other possibilities are: ");
-					msg.append(altMessage);
-
+					
+					msg.append("Maybe is the file not decodable with '").append(currentCharset).append("'. ");
+					msg.append("Try '").append(detectedCharset).append("'");
+					
+					int confidence = EncodingMatcherUtil.getConfidence(detectCharsets, detectedCharset);
+					if(confidence > 0) {
+						msg.append(confidence).append("%");
+					}
+					
 					addMarker(file, msg.toString(), -1, IMarker.SEVERITY_WARNING);
-
+					
 				} else {
 					deleteMarkers(file);
 				}
