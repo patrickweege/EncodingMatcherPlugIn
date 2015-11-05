@@ -124,12 +124,16 @@ public class EncodingMatcherPluginBuilder extends IncrementalProjectBuilder {
 		try {
 			if (resource instanceof IFile) {
 				IFile file = (IFile) resource;
+				this.deleteMarkers(file);
+				
 				String currentCharset = this.getCurrentCharset(file);
 
 				InputStream contents = file.getContents();
 
 				ICharsetDetecdor detector = new JUniversalChardet_CharsetDetector();
 				String detectedCharset = detector.detectCharset(contents);
+				
+				if(detectedCharset == null) return; // Maybe all is OK
 				
 				boolean isCurrentEqualsDetected = EncodingMatcherUtil.areCharsetsEqual(currentCharset, detectedCharset);
 				
@@ -141,17 +145,30 @@ public class EncodingMatcherPluginBuilder extends IncrementalProjectBuilder {
 					StringBuilder msg = new StringBuilder();
 					
 					msg.append("Maybe is the file not decodable with '").append(currentCharset).append("'. ");
-					msg.append("Try '").append(detectedCharset).append("'");
+					msg.append("Try '").append(detectedCharset).append("");
 					
 					int confidence = EncodingMatcherUtil.getConfidence(detectCharsets, detectedCharset);
 					if(confidence > 0) {
-						msg.append(confidence).append("%");
+						msg.append(" (").append(confidence).append("%)");
 					}
+					msg.append("'.");
+
+					
+					if(detectCharsets != null) {
+						boolean hasOthers = false;
+						for (CharsetMatch oneDetected : detectCharsets) {
+							if(EncodingMatcherUtil.areCharsetsEqual(oneDetected.getName(), detectedCharset)) continue;
+							if(oneDetected.getConfidence() < 80) continue;
+							if(!hasOthers && (hasOthers = true)) {
+								msg.append(" Others");
+							}
+							
+							msg.append(" ").append(oneDetected.getName());
+							msg.append(" (").append(oneDetected.getConfidence()).append("%), ");
+						}
+					}					
 					
 					addMarker(file, msg.toString(), -1, IMarker.SEVERITY_WARNING);
-					
-				} else {
-					deleteMarkers(file);
 				}
 			}
 		} catch (Exception e) {
@@ -189,4 +206,20 @@ public class EncodingMatcherPluginBuilder extends IncrementalProjectBuilder {
 		return theCharset;
 	}
 
+	
+	public static void main(String[] args) {
+		
+		boolean b = false;
+		
+		
+		System.out.println(b);
+		System.out.println(!b && (b = true));
+		System.out.println(b);
+		System.out.println(!b && (b = true));
+		
+		
+		
+		
+	}
+	
 }
