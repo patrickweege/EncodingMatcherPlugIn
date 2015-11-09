@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: EncodingMatcherPlugIn
 Bundle-SymbolicName: EncodingMatcherPlugIn;singleton:=true
-Bundle-Version: 1.0.4.BETA
+Bundle-Version: 1.0.5.BETA
 Bundle-ClassPath: libs/com.ibm.icu.icu4j.jar,
  .,
  libs/commons-lang3-3.4.jar,
@@ -13,5 +13,5 @@ Bundle-Vendor: Patrick Weege
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.resources
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
